@@ -22,20 +22,20 @@ var gge4Configuration = {
 		gatewayId: '',
 		password: ''
 	};
-	
+
 var gge4Proxy = new GGe4Proxy(gge4Configuration);
 
 var payload = {
-		amount:50.00, 
-		creditCard: { 
-			name: 'John Doe, 
-			number: '4111111111111111', 
-			expirationMonth: '01', 
+		amount:50.00,
+		creditCard: {
+			name: 'John Doe', 
+			number: '4111111111111111',
+			expirationMonth: '01',
 			expirationYear: '20',
 			securityCode: '123'
 		}
 	};
-	
+
 gge4Proxy.purchase(payload)
 .then(function (payment) {
 	//do something with the payment reciept
@@ -82,9 +82,9 @@ ONLY FIREFOX AND IE BROWSERS ARE SUPPORTED!!!!
 
 ```javascript
 /*
- * The key used for the HMAC calculation can be 
- * obtained through the Realtime Payment Manager 
- * interface when using a Merchant Administrator 
+ * The key used for the HMAC calculation can be
+ * obtained through the Realtime Payment Manager
+ * interface when using a Merchant Administrator
  * account.
  * Login: https://demo.globalgatewaye4.firstdata.com/?lang=en
  */

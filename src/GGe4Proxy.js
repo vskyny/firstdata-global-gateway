@@ -1,16 +1,16 @@
 (function () {
 	'use strict';
-	
+
 	var Sha1HmacBuilder = require('./Sha1HmacBuilder');
 	var RequestBuilder = require('./RequestBuilder');
-	var FirstDataResponse = require('./FirstDataResponse'); 
+	var FirstDataResponse = require('./FirstDataResponse');
 	var https = require('https');
 	var Q = require('q');
-	
+
 	var PURCHASE_TRANSACTION_TYPE = '00';
-	
+
 	function GGe4Proxy(config) {
-		
+
 		this.gatewayId = config.gatewayId;
 		this.password = config.password;
 
@@ -24,30 +24,32 @@
 			.withHeader('Content-Type','application/json')
 			.withHeader('Accept','application/json');
 	}
-	
+
 	GGe4Proxy.prototype._sendRequest = function (message) {
 		var deferred = Q.defer();
 		var requestOptions = this.requestBuilder.withMessage(message).withTimeStamp(new Date()).build();
 		var self = this;
-		
+
 		var callback = function(res) {
 			var payload = ''
-			
+
 			res.setEncoding('utf8');
 			res.on('data', function (chunk) {
 				payload += chunk;
 			});
-			
+
 			res.on('end', function () {
+				console.log('payload', payload)
 				try {
 					var text = payload && payload.replace(/^\s*|\s*$/g, '');
 					res.payload = text && JSON.parse(text);
 				} catch(e) {
-					console.log(e);
+					res.payload = payload
+					console.log('error', e);
 				}
-				
+
 				var firstDataResponse = new FirstDataResponse(res);
-			
+
 				if(firstDataResponse.ok()){
 					deferred.resolve(firstDataResponse.getTransaction());
 				}else{
@@ -55,27 +57,27 @@
 				}
 			});
 		};
-		
+
 		var req = https.request(requestOptions, callback);
-		
+
 		req.setTimeout(5000, function(){
 			req.abort();
 		});
-		
+
 		req.on('error', function(e) {
 			console.log(e);
 			deferred.reject(this._adaptError(e));
 		}.bind(this));
-		
+
 		req.write(message);
 		req.end();
-		
-		
+
+
 		return deferred.promise;
 	};
-		
+
 	GGe4Proxy.prototype.purchase = function (charge) {
-		
+
 		var message = JSON.stringify({
 			gateway_id: this.gatewayId,
 			password: this.password,
@@ -86,13 +88,13 @@
 			cardholder_name: charge.creditCard.name,
 			cc_verification_str2: charge.creditCard.securityCode,
 			cvd_presence_ind: '1'
-			
+
 		});
-		
+
 		return this._sendRequest(message);
 	};
-	
+
 	module.exports = GGe4Proxy;
-	
-	
+
+
 })();
